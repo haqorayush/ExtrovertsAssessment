@@ -1,7 +1,81 @@
-import React, { useState } from 'react';
-import { MapPin, GraduationCap, Calendar, AlertCircle } from 'lucide-react';
-import { Header } from './Header';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapPin, GraduationCap, Calendar, AlertCircle, ChevronDown } from 'lucide-react';
 import { LOCATION_DATA } from '../data/locations';
+
+interface CustomDropdownProps {
+  label: string;
+  icon?: React.ElementType;
+  options: string[];
+  value: string;
+  onChange: (val: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+  error?: string;
+}
+
+const CustomDropdown: React.FC<CustomDropdownProps> = ({ label, icon: Icon, options, value, onChange, placeholder, disabled, error }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="space-y-1.5" ref={dropdownRef}>
+      <label className="block text-xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-1.5">
+        {Icon && <Icon className="w-3.5 h-3.5 text-purple-400" />}
+        {label}
+      </label>
+      <div className="relative">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          className={`w-full px-4 py-3.5 rounded-xl bg-[#0F0C1B] text-white border text-sm font-medium focus:outline-none flex justify-between items-center ${
+            disabled
+              ? 'border-white/10 text-white/30 cursor-not-allowed bg-[#0a0814]'
+              : 'border-white/20 focus:border-white focus:ring-2 focus:ring-white/30 hover:bg-[#151125]'
+          }`}
+        >
+          <span className={!value ? 'text-white/50' : ''}>{value || placeholder}</span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-2 py-2 bg-[#151125] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange(opt);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition-colors ${
+                  value === opt ? 'bg-white/5 text-purple-400 font-bold' : 'text-white/90'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {error && (
+        <p className="text-xs text-red-400 font-medium flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+};
 
 interface Step3LocationEduProps {
   state: string;
@@ -90,8 +164,8 @@ export const Step3LocationEdu: React.FC<Step3LocationEduProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#000000] text-white">
-      <Header showGettingReady={true} stepNumber={3} totalSteps={4} onLogoClick={onBack} />
+    <div className="w-full flex-1 flex flex-col justify-between bg-transparent text-white">
+      
 
       <main className="w-full max-w-md mx-auto px-6 py-6 my-auto space-y-6">
         <div className="space-y-2">
@@ -105,100 +179,41 @@ export const Step3LocationEdu: React.FC<Step3LocationEduProps> = ({
 
         <div className="space-y-4">
           {/* Field 1: State */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-purple-400" />
-              STATE / REGION
-            </label>
-            <select
-              value={state}
-              onChange={(e) => handleStateChange(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-xl bg-[#0F0C1B] text-white border border-white/20 text-sm font-medium focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30"
-            >
-              <option value="" className="bg-[#0F0C1B] text-white/50">
-                Select State
-              </option>
-              {LOCATION_DATA.map((s) => (
-                <option key={s.name} value={s.name} className="bg-[#0F0C1B] text-white">
-                  {s.name}
-                </option>
-              ))}
-            </select>
-            {errors.state && (
-              <p className="text-xs text-red-400 font-medium flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {errors.state}
-              </p>
-            )}
-          </div>
+          <CustomDropdown
+            label="STATE / REGION"
+            icon={MapPin}
+            options={LOCATION_DATA.map((s) => s.name)}
+            value={state}
+            onChange={handleStateChange}
+            placeholder="Select State"
+            error={errors.state}
+          />
 
           {/* Field 2: City (Cascading from State) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-widest text-white/80">
-              CITY
-            </label>
-            <select
-              disabled={!state}
-              value={city}
-              onChange={(e) => handleCityChange(e.target.value)}
-              className={`w-full px-4 py-3.5 rounded-xl bg-[#0F0C1B] text-white border text-sm font-medium focus:outline-none ${
-                !state
-                  ? 'border-white/10 text-white/30 cursor-not-allowed bg-[#0a0814]'
-                  : 'border-white/20 focus:border-white focus:ring-2 focus:ring-white/30'
-              }`}
-            >
-              <option value="" className="bg-[#0F0C1B] text-white/50">
-                {!state ? 'Select a state first' : 'Select City'}
-              </option>
-              {availableCities.map((c) => (
-                <option key={c.name} value={c.name} className="bg-[#0F0C1B] text-white">
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            {errors.city && (
-              <p className="text-xs text-red-400 font-medium flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {errors.city}
-              </p>
-            )}
-          </div>
+          <CustomDropdown
+            label="CITY"
+            options={availableCities.map((c) => c.name)}
+            value={city}
+            onChange={handleCityChange}
+            placeholder={!state ? 'Select a state first' : 'Select City'}
+            disabled={!state}
+            error={errors.city}
+          />
 
           {/* Field 3: College / Campus (Cascading from City) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-1.5">
-              <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
-              COLLEGE / CAMPUS
-            </label>
-            <select
-              disabled={!city}
-              value={college}
-              onChange={(e) => {
-                onUpdate({ college: e.target.value });
-                if (errors.college) setErrors((prev) => ({ ...prev, college: '' }));
-              }}
-              className={`w-full px-4 py-3.5 rounded-xl bg-[#0F0C1B] text-white border text-sm font-medium focus:outline-none ${
-                !city
-                  ? 'border-white/10 text-white/30 cursor-not-allowed bg-[#0a0814]'
-                  : 'border-white/20 focus:border-white focus:ring-2 focus:ring-white/30'
-              }`}
-            >
-              <option value="" className="bg-[#0F0C1B] text-white/50">
-                {!city ? 'Select a city first' : 'Select College / Campus'}
-              </option>
-              {availableColleges.map((col) => (
-                <option key={col} value={col} className="bg-[#0F0C1B] text-white">
-                  {col}
-                </option>
-              ))}
-            </select>
-            {errors.college && (
-              <p className="text-xs text-red-400 font-medium flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {errors.college}
-              </p>
-            )}
-          </div>
+          <CustomDropdown
+            label="COLLEGE / CAMPUS"
+            icon={GraduationCap}
+            options={availableColleges}
+            value={college}
+            onChange={(val) => {
+              onUpdate({ college: val });
+              if (errors.college) setErrors((prev) => ({ ...prev, college: '' }));
+            }}
+            placeholder={!city ? 'Select a city first' : 'Select College / Campus'}
+            disabled={!city}
+            error={errors.college}
+          />
 
           {/* Custom college input if Other selected */}
           {college === 'Other / Independent' && (
@@ -257,9 +272,22 @@ export const Step3LocationEdu: React.FC<Step3LocationEduProps> = ({
       {/* Bottom Stacked Buttons */}
       <footer className="w-full max-w-md mx-auto px-6 pb-10 sm:pb-12 space-y-3">
         <button
-          onClick={handleNext}
-          disabled={!state || !city || !college}
+          onClick={(e) => {
+            if (!state || !city || !college) {
+              e.preventDefault();
+              return;
+            }
+            handleNext();
+          }}
+          aria-disabled={!state || !city || !college}
           type="button"
+          data-primary="true"
+          title={
+            !state ? "Please select a state to proceed." :
+            !city ? "Please select a city to proceed." :
+            !college ? "Please select a college/campus to proceed." :
+            undefined
+          }
           className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm sm:text-base tracking-wider uppercase shadow-xl transition-all duration-200 ${
             state && city && college
               ? 'bg-white text-black hover:bg-neutral-100 active:scale-[0.98]'

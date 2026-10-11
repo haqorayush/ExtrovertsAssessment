@@ -7,6 +7,18 @@
     background-color: #000000;
     color: #ffffff;
     font-family: 'Poppins', sans-serif;
+    /* Base Arrow Cursor (Fuchsia) */
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23d946ef' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z' fill='%23130F25'/%3E%3C/svg%3E") 3 3, auto;
+  }
+
+  /* Pointer Cursor (Pink) for interactive elements */
+  a, button, [role="button"], input[type="submit"], input[type="button"], select {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ec4899' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z' fill='%23fdf2f8'/%3E%3C/svg%3E") 3 3, pointer !important;
+  }
+
+  /* Keep native text selection cursors */
+  input[type="text"], input[type="number"], input[type="email"], input[type="password"], textarea {
+    cursor: text !important;
   }
 }
 

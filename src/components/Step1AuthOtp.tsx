@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mail, Phone, Loader2, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
-import { Header } from './Header';
 
 interface Step1AuthOtpProps {
   authType: 'email' | 'phone';
@@ -50,6 +49,8 @@ export const Step1AuthOtp: React.FC<Step1AuthOtpProps> = ({
     }
     return () => clearInterval(interval);
   }, [stage, resendTimer]);
+
+
 
   // Validation
   const validateIdentifier = (val: string, type: 'email' | 'phone') => {
@@ -163,11 +164,11 @@ export const Step1AuthOtp: React.FC<Step1AuthOtpProps> = ({
     // Mock verification: "123456" is standard test code, or allow any code for testing if not 000000
     setTimeout(() => {
       setIsVerifying(false);
-      if (fullCode === '000000' || fullCode === '999999') {
-        setOtpError('Invalid verification code. Please enter 123456 for demo.');
+      if (fullCode !== '123456') {
+        setOtpError('Invalid verification code.');
         setIsShake(true);
         setTimeout(() => setIsShake(false), 500);
-        onErrorToast('Incorrect verification code. Try demo code 123456');
+        onErrorToast('Incorrect verification code.');
       } else {
         // Success
         onUpdate({ isVerified: true, otp: fullCode });
@@ -176,19 +177,12 @@ export const Step1AuthOtp: React.FC<Step1AuthOtpProps> = ({
     }, 800);
   };
 
-  const handleAutoFillDemo = () => {
-    const demoCode = ['1', '2', '3', '4', '5', '6'];
-    setOtpDigits(demoCode);
-    setOtpError('');
-    onUpdate({ otp: '123456' });
-    digitInputRefs.current[5]?.focus();
-  };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#000000] text-white">
-      <Header showGettingReady={true} stepNumber={1} totalSteps={4} onLogoClick={onBack} />
+    <div className="w-full flex-1 flex flex-col justify-between bg-transparent text-white">
+      
 
-      <main className="w-full max-w-md mx-auto px-6 py-6 my-auto">
+      <main className="w-full max-w-md mx-auto px-6 py-4 my-auto overflow-y-auto custom-scrollbar">
         {stage === 'input' ? (
           /* Sub-step 1A: Email / Phone input */
           <div className="space-y-6">
@@ -354,16 +348,6 @@ export const Step1AuthOtp: React.FC<Step1AuthOtpProps> = ({
                   Resend Code
                 </button>
               )}
-
-              <button
-                type="button"
-                onClick={handleAutoFillDemo}
-                className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/90 text-xs font-semibold tracking-wide border border-white/10 transition-colors flex items-center gap-1.5"
-                title="Auto fill test code: 123456"
-              >
-                <Sparkles className="w-3 h-3 text-amber-300" />
-                Fill Demo Code (123456)
-              </button>
             </div>
           </div>
         )}
@@ -373,9 +357,17 @@ export const Step1AuthOtp: React.FC<Step1AuthOtpProps> = ({
       <footer className="w-full max-w-md mx-auto px-6 pb-10 sm:pb-12 space-y-3">
         {stage === 'input' ? (
           <button
-            onClick={handleSendCode}
-            disabled={isSendingCode || !localIdentifier.trim()}
+            onClick={(e) => {
+              if (isSendingCode || !localIdentifier.trim()) {
+                e.preventDefault();
+                return;
+              }
+              handleSendCode();
+            }}
+            aria-disabled={isSendingCode || !localIdentifier.trim()}
             type="button"
+            data-primary="true"
+            title={!localIdentifier.trim() ? "Please enter a valid email or phone number to proceed." : undefined}
             className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm sm:text-base tracking-wider uppercase shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
               localIdentifier.trim() && !isSendingCode
                 ? 'bg-white text-black hover:bg-neutral-100 active:scale-[0.98]'
@@ -393,9 +385,17 @@ export const Step1AuthOtp: React.FC<Step1AuthOtpProps> = ({
           </button>
         ) : (
           <button
-            onClick={handleVerifyOtp}
-            disabled={isVerifying || otpDigits.join('').length < 6}
+            onClick={(e) => {
+              if (isVerifying || otpDigits.join('').length < 6) {
+                e.preventDefault();
+                return;
+              }
+              handleVerifyOtp();
+            }}
+            aria-disabled={isVerifying || otpDigits.join('').length < 6}
             type="button"
+            data-primary="true"
+            title={otpDigits.join('').length < 6 ? "Please enter all 6 digits of the OTP to proceed." : undefined}
             className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm sm:text-base tracking-wider uppercase shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
               otpDigits.join('').length === 6 && !isVerifying
                 ? 'bg-white text-black hover:bg-neutral-100 active:scale-[0.98]'

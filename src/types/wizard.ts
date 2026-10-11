@@ -1,6 +1,8 @@
 export type WizardStep = 
   | 'landing'
   | 'terms'
+  | 'login'
+  | 'login_verify'
   | 'step1_auth'
   | 'step2_identity'
   | 'step3_location'
@@ -10,6 +12,7 @@ export type WizardStep =
 export type Step2SubStep = 'username' | 'name' | 'age' | 'pronouns';
 
 export interface FormData {
+  isLoginFlow?: boolean;
   // Step 1: Auth & OTP
   authType: 'email' | 'phone';
   identifier: string; // email address or phone number
@@ -21,6 +24,7 @@ export interface FormData {
   fullName: string;
   age: string; // numeric string
   pronouns: string; // he/him/his, she/her/hers, they/them/theirs, custom
+  profilePicture?: string;
 
   // Step 3: Location & College
   state: string;

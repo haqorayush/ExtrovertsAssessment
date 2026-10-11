@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { AlertCircle, ShieldAlert } from 'lucide-react';
-import { Header } from './Header';
 import type { Step2SubStep } from '../types/wizard';
 
 interface Step2IdentityProps {
@@ -128,10 +127,10 @@ export const Step2Identity: React.FC<Step2IdentityProps> = ({
   const isUnderage = !isNaN(parsedAge) && parsedAge > 0 && parsedAge < 18;
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#000000] text-white">
-      <Header showGettingReady={true} stepNumber={2} totalSteps={4} onLogoClick={handleBackSubStep} />
+    <div className="w-full flex-1 flex flex-col justify-between bg-transparent text-white">
+      
 
-      <main className="w-full max-w-md mx-auto px-6 py-6 my-auto">
+      <main className="w-full max-w-md mx-auto px-6 py-4 my-auto overflow-y-auto custom-scrollbar">
         {/* SUBSTEP 2A: USERNAME (Screenshots 3 & 5) */}
         {subStep === 'username' && (
           <div className="space-y-6">
@@ -351,14 +350,33 @@ export const Step2Identity: React.FC<Step2IdentityProps> = ({
       {/* Bottom Stacked Buttons */}
       <footer className="w-full max-w-md mx-auto px-6 pb-10 sm:pb-12 space-y-3">
         <button
-          onClick={handleNextSubStep}
-          disabled={
+          onClick={(e) => {
+            const isDisabled = (subStep === 'username' && !username.trim()) ||
+                               (subStep === 'name' && !fullName.trim()) ||
+                               (subStep === 'age' && (!age.trim() || isUnderage)) ||
+                               (subStep === 'pronouns' && !pronouns.trim());
+            if (isDisabled) {
+              e.preventDefault();
+              return;
+            }
+            handleNextSubStep();
+          }}
+          aria-disabled={
             (subStep === 'username' && !username.trim()) ||
             (subStep === 'name' && !fullName.trim()) ||
             (subStep === 'age' && (!age.trim() || isUnderage)) ||
             (subStep === 'pronouns' && !pronouns.trim())
           }
           type="button"
+          data-primary="true"
+          title={
+            (subStep === 'username' && !username.trim()) ? 'Please choose a username to proceed.' :
+            (subStep === 'name' && !fullName.trim()) ? 'Please enter your full name to proceed.' :
+            (subStep === 'age' && !age.trim()) ? 'Please enter your age to proceed.' :
+            (subStep === 'age' && isUnderage) ? 'You must be at least 18 years old to proceed.' :
+            (subStep === 'pronouns' && !pronouns.trim()) ? 'Please select your pronouns to proceed.' :
+            undefined
+          }
           className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm sm:text-base tracking-wider uppercase shadow-xl transition-all duration-200 ${
             (subStep === 'username' && username.trim()) ||
             (subStep === 'name' && fullName.trim()) ||

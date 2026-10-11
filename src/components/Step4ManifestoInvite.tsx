@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Loader2, Sparkles, Check } from 'lucide-react';
-import { Header } from './Header';
 import { VIBE_TAGS } from '../data/locations';
 
 interface Step4ManifestoInviteProps {
@@ -60,10 +59,10 @@ export const Step4ManifestoInvite: React.FC<Step4ManifestoInviteProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#000000] text-white">
-      <Header showGettingReady={true} stepNumber={4} totalSteps={4} onLogoClick={onBack} />
+    <div className="w-full flex-1 flex flex-col justify-between bg-transparent text-white">
+      
 
-      <main className="w-full max-w-md mx-auto px-6 py-4 my-auto space-y-6">
+      <main className="w-full max-w-[500px] mx-auto px-6 py-4 my-auto space-y-6">
         {/* Exact App Manifesto (Screenshots 4 & 9) */}
         <div className="space-y-1.5 font-poppins font-black text-sm sm:text-base tracking-wide leading-relaxed text-white select-none">
           <p>
@@ -124,12 +123,9 @@ export const Step4ManifestoInvite: React.FC<Step4ManifestoInviteProps> = ({
             <label className="block text-xs font-bold uppercase tracking-widest text-white/80">
               PICK YOUR PARTY VIBES (MIN 3)
             </label>
-            <span className="text-xs text-purple-400 font-bold">
-              {vibes.length}/3 selected
-            </span>
           </div>
 
-          <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1 py-1">
+          <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-1 py-1 custom-scrollbar">
             {VIBE_TAGS.map((tag) => {
               const isSelected = vibes.includes(tag);
               return (
@@ -153,11 +149,19 @@ export const Step4ManifestoInvite: React.FC<Step4ManifestoInviteProps> = ({
       </main>
 
       {/* Bottom Stacked Buttons */}
-      <footer className="w-full max-w-md mx-auto px-6 pb-10 sm:pb-12 space-y-3">
+      <footer className="w-full max-w-[500px] mx-auto px-6 pb-10 sm:pb-12 space-y-3">
         <button
-          onClick={handleSubmit}
-          disabled={isSubmitting || vibes.length < 3}
+          onClick={(e) => {
+            if (isSubmitting || vibes.length < 3) {
+              e.preventDefault();
+              return;
+            }
+            handleSubmit();
+          }}
+          aria-disabled={isSubmitting || vibes.length < 3}
           type="button"
+          data-primary="true"
+          title={vibes.length < 3 ? `Please select at least 3 vibes to proceed (${vibes.length}/3 selected).` : undefined}
           className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm sm:text-base tracking-wider uppercase shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
             vibes.length >= 3 && !isSubmitting
               ? 'bg-white text-black hover:bg-neutral-100 active:scale-[0.98]'
